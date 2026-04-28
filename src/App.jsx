@@ -34,6 +34,7 @@ const presetColors = ["#1ea54a", "#25d366", "#16a34a", "#0ea5e9", "#8b5cf6", "#f
 const DEFAULTS = {
   bubbleColor: "#1ea54a",
   bubbleIconKey: "bi-solid-square",
+  bubbleFlipped: false,
   borderColor: "#ffffff",
   borderWidth: 12,
   folderColor: "#ffffff",
@@ -140,6 +141,7 @@ function getLogoPropsFromSnapshot(data = {}, size = 260) {
     size,
     color,
     bubbleIconKey: data.bubbleIconKey ?? DEFAULTS.bubbleIconKey,
+    bubbleFlipped: Boolean(data.bubbleFlipped),
     innerLayers: getActiveLogoLayers(data.layers),
     positions: data.positions ?? {},
     accentColor: data.accentColor ?? color,
@@ -464,6 +466,7 @@ function ResetIcon({ onClick, title = "איפוס" }) {
 export default function App() {
   const [bubbleColor, setBubbleColor] = useState(DEFAULTS.bubbleColor);
   const [bubbleIconKey, setBubbleIconKey] = useState(DEFAULTS.bubbleIconKey);
+  const [bubbleFlipped, setBubbleFlipped] = useState(DEFAULTS.bubbleFlipped);
   const [layers, setLayers] = useState(DEFAULTS.layers);
   const [positions, setPositions] = useState({});
   const [accentColor, setAccentColor] = useState(DEFAULTS.bubbleColor);
@@ -499,13 +502,13 @@ export default function App() {
 
   const setBubbleColorValue = (color) => {
     setBubbleColor(color);
-    setAccentColor(color);
     syncDefaultExportBackgroundColor(color);
   };
 
   const buildSnapshot = () => ({
     bubbleColor,
     bubbleIconKey,
+    bubbleFlipped,
     layers,
     positions,
     accentColor,
@@ -522,6 +525,7 @@ export default function App() {
     const nextBubbleColor = snap.bubbleColor ?? DEFAULTS.bubbleColor;
     setBubbleColor(nextBubbleColor);
     setBubbleIconKey(snap.bubbleIconKey ?? DEFAULTS.bubbleIconKey);
+    setBubbleFlipped(Boolean(snap.bubbleFlipped));
     setLayers(snap.layers ?? DEFAULTS.layers);
     setPositions(snap.positions ?? {});
     setAccentColor(snap.accentColor ?? DEFAULTS.bubbleColor);
@@ -651,7 +655,10 @@ export default function App() {
   };
 
   const resetBubbleColor = () => setBubbleColorValue(DEFAULTS.bubbleColor);
-  const resetBubbleIcon = () => setBubbleIconKey(DEFAULTS.bubbleIconKey);
+  const resetBubbleShape = () => {
+    setBubbleIconKey(DEFAULTS.bubbleIconKey);
+    setBubbleFlipped(DEFAULTS.bubbleFlipped);
+  };
   const resetBorderColor = () => setBorderColor(DEFAULTS.borderColor);
   const resetBorderWidth = () => setBorderWidth(DEFAULTS.borderWidth);
   const resetAccent = () => setAccentColor(bubbleColor);
@@ -710,13 +717,25 @@ export default function App() {
       img.src = url;
     });
 
-  const prepareBubbleSvgClone = (bubbleSvg, sourceSize, renderedBubbleColor, borderColor, borderWidth) => {
+  const prepareBubbleSvgClone = (
+    bubbleSvg,
+    sourceSize,
+    renderedBubbleColor,
+    borderColor,
+    borderWidth,
+    bubbleFlipped
+  ) => {
     const bubbleClone = bubbleSvg.cloneNode(true);
     bubbleClone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     bubbleClone.setAttribute("x", "0");
     bubbleClone.setAttribute("y", "0");
     bubbleClone.setAttribute("width", String(sourceSize));
     bubbleClone.setAttribute("height", String(sourceSize));
+    if (bubbleFlipped) {
+      bubbleClone.setAttribute("transform", `translate(${sourceSize} 0) scale(-1 1)`);
+    } else {
+      bubbleClone.removeAttribute("transform");
+    }
     bubbleClone.style.width = `${sourceSize}px`;
     bubbleClone.style.height = `${sourceSize}px`;
     bubbleClone.style.color = renderedBubbleColor;
@@ -758,6 +777,7 @@ export default function App() {
       parseFloat(logoStyle.getPropertyValue("--border-width")) ||
       parseFloat(logoStyle.strokeWidth) ||
       0;
+    const bubbleFlipped = logoNode.classList.contains("bubble-flipped");
 
     return {
       logoNode,
@@ -767,6 +787,7 @@ export default function App() {
       renderedBubbleColor,
       borderColor,
       borderWidth,
+      bubbleFlipped,
       innerIconNodes: [...logoNode.querySelectorAll(".inner-icon")],
     };
   };
@@ -800,6 +821,7 @@ export default function App() {
       renderedBubbleColor,
       borderColor,
       borderWidth,
+      bubbleFlipped,
       innerIconNodes,
     } = getLogoExportParts(node, sourceSize);
 
@@ -811,7 +833,14 @@ export default function App() {
     if (bubbleSvg) {
       parts.push(
         serializeSvgNode(
-          prepareBubbleSvgClone(bubbleSvg, sourceSize, renderedBubbleColor, borderColor, borderWidth)
+          prepareBubbleSvgClone(
+            bubbleSvg,
+            sourceSize,
+            renderedBubbleColor,
+            borderColor,
+            borderWidth,
+            bubbleFlipped
+          )
         )
       );
     }
@@ -871,12 +900,20 @@ export default function App() {
       renderedBubbleColor,
       borderColor,
       borderWidth,
+      bubbleFlipped,
       innerIconNodes,
     } = getLogoExportParts(node, sourceSize);
 
     if (bubbleSvg) {
       const bubbleImage = await svgElementToImage(
-        prepareBubbleSvgClone(bubbleSvg, sourceSize, renderedBubbleColor, borderColor, borderWidth)
+        prepareBubbleSvgClone(
+          bubbleSvg,
+          sourceSize,
+          renderedBubbleColor,
+          borderColor,
+          borderWidth,
+          bubbleFlipped
+        )
       );
       ctx.drawImage(bubbleImage, 0, 0, sourceSize, sourceSize);
     }
@@ -1033,6 +1070,7 @@ export default function App() {
   const handleResetAll = () => {
     setBubbleColor(DEFAULTS.bubbleColor);
     setBubbleIconKey(DEFAULTS.bubbleIconKey);
+    setBubbleFlipped(DEFAULTS.bubbleFlipped);
     setLayers(DEFAULTS.layers);
     setPositions({});
     setAccentColor(DEFAULTS.bubbleColor);
@@ -1082,7 +1120,17 @@ export default function App() {
           <section className="panel">
             <div className="panel-head">
               <h2 className="panel-title">צורת הבועית</h2>
-              <ResetIcon onClick={resetBubbleIcon} />
+              <ResetIcon onClick={resetBubbleShape} />
+            </div>
+            <div className="row">
+              <span className="row-label">Mirror</span>
+              <button
+                className={`mirror-toggle ${bubbleFlipped ? "active" : ""}`}
+                onClick={() => setBubbleFlipped((value) => !value)}
+                title="הפוך את הבועית אופקית"
+              >
+                ⇄
+              </button>
             </div>
             <div className="bubble-grid">
               {Object.entries(bubbleIcons).map(([key, { label, Icon }]) => (
@@ -1092,7 +1140,10 @@ export default function App() {
                   onClick={() => setBubbleIconKey(key)}
                   title={label}
                 >
-                  <Icon style={{ color: bubbleColor }} />
+                  <Icon
+                    className={bubbleFlipped ? "mirrored-preview" : ""}
+                    style={{ color: bubbleColor }}
+                  />
                 </button>
               ))}
             </div>

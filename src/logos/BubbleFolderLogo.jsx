@@ -247,13 +247,14 @@ export function BubbleFolderThumbnail({
   imageDocVariant = "fold",
   borderColor = "#ffffff",
   borderWidth = 12,
+  bubbleFlipped = false,
 }) {
   const config = bubbleIcons[bubbleIconKey] ?? bubbleIcons["bi-solid-square"];
   const { Icon: Bubble } = config;
   const scaledBorder = borderWidth === 0 ? 0 : Math.max(0.5, borderWidth * (size / 260));
   return (
     <div
-      className="bubble-folder-logo thumbnail"
+      className={`bubble-folder-logo thumbnail ${bubbleFlipped ? "bubble-flipped" : ""}`}
       style={{
         fontSize: size,
         "--bubble-color": color,
@@ -310,6 +311,7 @@ export default function BubbleFolderLogo({
   borderColor = "#ffffff",
   borderWidth = 12,
   interactive = true,
+  bubbleFlipped = false,
 }) {
   const config = bubbleIcons[bubbleIconKey] ?? bubbleIcons["bi-solid-square"];
   const { Icon: Bubble } = config;
@@ -401,7 +403,7 @@ export default function BubbleFolderLogo({
   return (
     <div
       ref={wrapperRef}
-      className="bubble-folder-logo"
+      className={`bubble-folder-logo ${bubbleFlipped ? "bubble-flipped" : ""}`}
       style={{
         fontSize: size,
         "--bubble-color": color,

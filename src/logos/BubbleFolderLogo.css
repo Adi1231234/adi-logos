@@ -19,6 +19,11 @@
   overflow: visible;
 }
 
+.bubble-folder-logo.bubble-flipped .bubble {
+  transform: scaleX(-1);
+  transform-origin: center;
+}
+
 .bubble-folder-logo .bubble * {
   vector-effect: non-scaling-stroke;
   fill: var(--bubble-color, #1ea54a);
