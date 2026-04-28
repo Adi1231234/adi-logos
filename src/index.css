@@ -1,0 +1,32 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  direction: rtl;
+}
+
+body {
+  margin: 0;
+  font-family: "Heebo", "Rubik", "Assistant", system-ui, -apple-system, sans-serif;
+  background: #0b1220;
+  color: #e5e7eb;
+  direction: rtl;
+  text-align: right;
+}
+
+input,
+button,
+select,
+textarea {
+  font-family: inherit;
+  direction: rtl;
+  text-align: right;
+}
+
+code {
+  direction: ltr;
+  unicode-bidi: bidi-override;
+}
