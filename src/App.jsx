@@ -11,27 +11,6 @@ import BubbleFolderLogo, {
 import "./App.css";
 
 const STORAGE_KEY = "logo-studio-presets";
-const STORAGE_IMPORT_HASH_PREFIX = "#importLocalStorage=";
-
-function importLocalStorageFromHash() {
-  if (typeof window === "undefined") return;
-  if (!window.location.hash.startsWith(STORAGE_IMPORT_HASH_PREFIX)) return;
-
-  try {
-    const encoded = window.location.hash.slice(STORAGE_IMPORT_HASH_PREFIX.length);
-    const binary = atob(encoded.replace(/-/g, "+").replace(/_/g, "/"));
-    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-    const entries = JSON.parse(new TextDecoder().decode(bytes));
-    Object.entries(entries).forEach(([key, value]) => {
-      localStorage.setItem(key, String(value));
-    });
-    window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
-  } catch (error) {
-    console.error("Failed to import localStorage", error);
-  }
-}
-
-importLocalStorageFromHash();
 
 function loadPresets() {
   try {
